@@ -1,0 +1,10 @@
+Future plan:
+    Home screen:
+        ☐ add a continue from where you left off section. A button that carrys on the setup or tracking. Read localstorage, if exists then display.
+        ☐ add setup options. Quick play and official setup.
+    
+    Quick play:
+        - User chooses either 1 or 2 teams. Take sthem to a screen with a court and player icons, they click the icon and assign a number to them. They can track everything from within this page. Its just a quick feature with no barrier to entry
+    
+    Official setup:
+        - Here users assign a minimum of 6 players (namd and number) for both teams, with the option of adding up to 2 liberos. More of an official tracking. Then when subbing players on the tracking page, the modal only shows available players.
