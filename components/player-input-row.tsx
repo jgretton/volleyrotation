@@ -9,12 +9,18 @@ type PlayerInputRowProps = {
 	team: "home" | "away";
 	player: Player;
 	index: number;
+	hasNameError: boolean;
+	hasNumberError: boolean;
+	isDuplicate: boolean;
 };
 
 export default function PlayerInputRow({
 	team,
 	player,
 	index,
+	hasNameError,
+	hasNumberError,
+	isDuplicate,
 }: PlayerInputRowProps) {
 	const { removeAdditionalPlayer, updatePlayer } = useMatchStore();
 
@@ -29,14 +35,21 @@ export default function PlayerInputRow({
 					Player {index + 1} number
 				</Label>
 				<Input
+					aria-invalid={hasNumberError}
 					type="text"
 					name={`playerNumber-${index + 1}`}
 					id={`playerNumber-${index + 1}`}
-					className="w-12 text-center placeholder:text-muted-foreground/70 placeholder:text-sm"
+					className={`w-12 text-center placeholder:text-muted-foreground/70 placeholder:text-sm tabular-nums ${
+						hasNumberError
+							? "border-red-400 border-2"
+							: isDuplicate
+								? "border-amber-400 border-2"
+								: ""
+					}`}
 					placeholder="#"
 					onChange={(e) => {
-						const value = e.target.value;
-						handleChange({ number: value === "" ? null : Number(value) });
+						const digits = e.target.value.replace(/\D/g, "");
+						handleChange({ number: digits === "" ? null : Number(digits) });
 					}}
 					value={player.number ?? ""}
 					pattern="[0-9]*"
@@ -51,8 +64,9 @@ export default function PlayerInputRow({
 					Player {index + 1} name
 				</Label>
 				<Input
+					aria-invalid={hasNameError}
 					type="text"
-					className="placeholder:text-muted-foreground/70 placeholder:text-sm "
+					className={`placeholder:text-muted-foreground/70 placeholder:text-sm ${hasNameError ? "border-red-400 border-2" : ""}`}
 					placeholder="Player name"
 					name={`playerName-${index + 1}`}
 					id={`playerName-${index + 1}`}

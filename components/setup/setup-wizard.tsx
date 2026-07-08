@@ -3,6 +3,7 @@
 import StepProgress from "@/components/setup/step-progress";
 import { useState } from "react";
 import PlayerDetailsStep from "./steps/player-details-step";
+import StartingLineupStep from "./steps/starting-lineup-step";
 import TeamNameStep from "./steps/team-name-step";
 
 export default function SetupWizard() {
@@ -25,6 +26,7 @@ export default function SetupWizard() {
 			<div className="mt-5 flex flex-1 flex-col">
 				{currentStep === 1 && <TeamNameStep nextStep={nextStep} />}
 				{currentStep === 2 && <PlayerDetailsStep nextStep={nextStep} />}
+				{currentStep === 3 && <StartingLineupStep nextStep={nextStep} />}
 			</div>
 		</div>
 	);

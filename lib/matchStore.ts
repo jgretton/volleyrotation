@@ -1,9 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { MAX_PLAYERS, MIN_PLAYERS } from "./constants";
 import { MatchStore, Team } from "./types";
-
-const MAX_PLAYERS = 12;
-const MIN_PLAYERS = 6;
 
 const makePlayer = () => ({
 	id: crypto.randomUUID(),
@@ -73,6 +71,18 @@ export const useMatchStore = create<MatchStore>()(
 						...state,
 						[team]: { ...state[team], players: updatedPlayers },
 					};
+				}),
+			removeEmptyPlayers: (team) =>
+				set((state) => {
+					const players = state[team].players;
+					const nonEmpty = players.filter(
+						(player) => player.name.trim() !== "" || player.number !== null,
+					);
+
+					// safety: if we don't have 6 real players, leave the roster alone
+					if (nonEmpty.length < MIN_PLAYERS) return state;
+
+					return { [team]: { ...state[team], players: nonEmpty } };
 				}),
 		}),
 		{
