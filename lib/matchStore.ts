@@ -12,53 +12,64 @@ const makePlayer = () => ({
 const makeTeam = (): Team => ({
 	name: "",
 	players: Array.from({ length: MIN_PLAYERS }, makePlayer),
+	lineup: [],
 });
 
 export const useMatchStore = create<MatchStore>()(
 	persist(
 		(set) => ({
-			home: makeTeam(),
-			away: makeTeam(),
+			setup: {
+				home: makeTeam(),
+				away: makeTeam(),
+			},
+			match: null,
 
 			setTeamName: (team, teamName) =>
 				set((state) => ({
-					...state,
-					[team]: { ...state[team], name: teamName },
+					setup: {
+						...state.setup,
+						[team]: { ...state.setup[team], name: teamName },
+					},
 				})),
 			setTeamNames: (home, away) =>
 				set((state) => ({
-					...state,
-					home: { ...state.home, name: home },
-					away: { ...state.away, name: away },
+					setup: {
+						home: { ...state.setup.home, name: home },
+						away: { ...state.setup.away, name: away },
+					},
 				})),
 			removeAdditionalPlayer: (team, playerID) =>
 				set((state) => {
-					if (state[team].players.length <= MIN_PLAYERS) return state;
+					if (state.setup[team].players.length <= MIN_PLAYERS) return state;
 
 					return {
-						...state,
-						[team]: {
-							...state[team],
-							players: state[team].players.filter(
-								(player) => player.id !== playerID,
-							),
+						setup: {
+							...state.setup,
+							[team]: {
+								...state.setup[team],
+								players: state.setup[team].players.filter(
+									(player) => player.id !== playerID,
+								),
+							},
 						},
 					};
 				}),
 			addAdditionalPlayer: (team) =>
 				set((state) => {
-					if (state[team].players.length >= MAX_PLAYERS) return state;
+					if (state.setup[team].players.length >= MAX_PLAYERS) return state;
 					return {
-						...state,
-						[team]: {
-							...state[team],
-							players: [...state[team].players, makePlayer()],
+						setup: {
+							...state.setup,
+							[team]: {
+								...state.setup[team],
+								players: [...state.setup[team].players, makePlayer()],
+							},
 						},
 					};
 				}),
 			updatePlayer: (team, playerID, value) =>
 				set((state) => {
-					const updatedPlayers = state[team].players.map((player) =>
+					const updatedPlayers = state.setup[team].players.map((player) =>
 						player.id === playerID
 							? {
 									...player,
@@ -68,13 +79,15 @@ export const useMatchStore = create<MatchStore>()(
 					);
 
 					return {
-						...state,
-						[team]: { ...state[team], players: updatedPlayers },
+						setup: {
+							...state.setup,
+							[team]: { ...state.setup[team], players: updatedPlayers },
+						},
 					};
 				}),
 			removeEmptyPlayers: (team) =>
 				set((state) => {
-					const players = state[team].players;
+					const players = state.setup[team].players;
 					const nonEmpty = players.filter(
 						(player) => player.name.trim() !== "" || player.number !== null,
 					);
@@ -82,12 +95,28 @@ export const useMatchStore = create<MatchStore>()(
 					// safety: if we don't have 6 real players, leave the roster alone
 					if (nonEmpty.length < MIN_PLAYERS) return state;
 
-					return { [team]: { ...state[team], players: nonEmpty } };
+					return {
+						setup: {
+							...state.setup,
+							[team]: { ...state.setup[team], players: nonEmpty },
+						},
+					};
+				}),
+			setStartingLineups: (startingLineups) =>
+				set((state) => {
+					const { home, away } = startingLineups;
+
+					return {
+						setup: {
+							home: { ...state.setup.home, lineup: home },
+							away: { ...state.setup.away, lineup: away },
+						},
+					};
 				}),
 		}),
 		{
 			name: "match-store",
-			version: 3,
+			version: 5,
 		},
 	),
 );

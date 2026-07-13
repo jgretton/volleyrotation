@@ -7,7 +7,10 @@ import { useMatchStore } from "@/lib/matchStore";
 import { useState } from "react";
 
 export default function TeamNameStep({ nextStep }: { nextStep: () => void }) {
-	const { home, away, setTeamNames } = useMatchStore((state) => state);
+	const {
+		setup: { home, away },
+		setTeamNames,
+	} = useMatchStore((state) => state);
 
 	const [error, setError] = useState("");
 

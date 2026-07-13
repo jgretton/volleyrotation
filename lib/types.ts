@@ -7,10 +7,18 @@ export type Player = {
 export type Team = {
 	name: string;
 	players: Player[];
+	lineup: { position: number; playerId: string }[];
 };
 export type MatchState = {
-	home: Team;
-	away: Team;
+	setup: {
+		home: Team;
+		away: Team;
+	};
+	match: {
+		home: Team;
+		away: Team;
+		rotation: { home: number; away: number };
+	} | null;
 };
 
 export type MatchActions = {
@@ -19,14 +27,17 @@ export type MatchActions = {
 
 	removeAdditionalPlayer: (team: "home" | "away", playerID: string) => void;
 	addAdditionalPlayer: (team: "home" | "away") => void;
-
 	removeEmptyPlayers: (team: "home" | "away") => void;
-
 	updatePlayer: (
 		team: "home" | "away",
 		playerID: string,
 		changes: Partial<Player>,
 	) => void;
+
+	setStartingLineups: (startingLineups: {
+		home: Team["lineup"];
+		away: Team["lineup"];
+	}) => void;
 };
 
 export type MatchStore = MatchState & MatchActions;

@@ -6,11 +6,18 @@ import PlayerDetailsStep from "./steps/player-details-step";
 import StartingLineupStep from "./steps/starting-lineup-step";
 import TeamNameStep from "./steps/team-name-step";
 
+import { useRouter } from "next/navigation";
+
 export default function SetupWizard() {
 	const [currentStep, setCurrentStep] = useState<number>(1);
+	const router = useRouter();
 
 	const nextStep = () => {
 		setCurrentStep((prev) => prev + 1);
+	};
+
+	const completeSetup = () => {
+		router.push("/match");
 	};
 
 	const previousStep = () => {
@@ -26,7 +33,9 @@ export default function SetupWizard() {
 			<div className="mt-5 flex flex-1 flex-col">
 				{currentStep === 1 && <TeamNameStep nextStep={nextStep} />}
 				{currentStep === 2 && <PlayerDetailsStep nextStep={nextStep} />}
-				{currentStep === 3 && <StartingLineupStep nextStep={nextStep} />}
+				{currentStep === 3 && (
+					<StartingLineupStep completeSetup={completeSetup} />
+				)}
 			</div>
 		</div>
 	);

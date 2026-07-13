@@ -1,23 +1,110 @@
-'use client';
+"use client";
 
-import VolleyballCourt from '@/components/volleyball-court';
-import { useMatchStore } from '@/lib/matchStore';
-import { useState } from 'react';
-const PLAYERS = [1, 2, 3, 4, 5, 6];
-
-const COURT_POSITIONS = [4, 3, 2, 5, 6, 1];
+import LineupSelectDialog from "@/components/lineup-select-dialog";
+import Nameplate from "@/components/nameplate";
+import LineupErrorBox from "@/components/setup/lineup-error-box";
+import { Button } from "@/components/ui/button";
+import VolleyballCourt from "@/components/volleyball-court";
+import { COURT_POSITIONS } from "@/lib/constants";
+import { useMatchStore } from "@/lib/matchStore";
+import { Player } from "@/lib/types";
+import { useState } from "react";
 
 export default function StartingLineupStep({
-	nextStep,
+	completeSetup,
 }: {
-	nextStep: () => void;
+	completeSetup: () => void;
 }) {
-	const { home, away } = useMatchStore();
+	const matchStore = useMatchStore();
 
 	const [target, setTarget] = useState<{
-		team: 'home' | 'away';
+		team: "home" | "away";
 		position: number;
 	} | null>(null);
+
+	type LineupSlot = { position: number; playerId: string | null };
+	const lineup: LineupSlot[] = [
+		{ position: 1, playerId: null },
+		{ position: 2, playerId: null },
+		{ position: 3, playerId: null },
+		{ position: 4, playerId: null },
+		{ position: 5, playerId: null },
+		{ position: 6, playerId: null },
+	];
+
+	const [lineups, setLineups] = useState<{
+		home: LineupSlot[];
+		away: LineupSlot[];
+	}>({ home: [...lineup], away: [...lineup] });
+
+	const availablePlayers = () => {
+		if (!target) return [];
+
+		const selectedIds = lineups[target.team]
+			.filter((player) => player.playerId !== null)
+			.map((player) => player.playerId);
+
+		return matchStore.setup[target.team].players.filter(
+			(player) => !selectedIds.includes(player.id),
+		);
+	};
+
+	const assignPlayer = (player: Player) => {
+		if (!target) return;
+
+		const newTeamLineup = [...lineups[target.team]].map((p) => {
+			if (p.position === target.position)
+				return { position: target.position, playerId: player.id };
+			else return p;
+		});
+
+		setLineups((prev) => ({ ...prev, [target.team]: newTeamLineup }));
+		setTarget(null);
+
+		const updatedErrors = errors[target.team].filter(
+			(zone) => zone !== target.position,
+		);
+
+		setErrors((prev) => ({ ...prev, [target.team]: updatedErrors }));
+	};
+
+	const removePlayer = (team: "home" | "away", position: number) => {
+		setLineups((prev) => ({
+			...prev,
+			[team]: prev[team].map((slot) =>
+				slot.position === position ? { ...slot, playerId: null } : slot,
+			),
+		}));
+	};
+
+	const [errors, setErrors] = useState<{ home: number[]; away: number[] }>({
+		home: [],
+		away: [],
+	});
+	const continueOn = () => {
+		// validate
+
+		const missingPlayers = {
+			home: lineups.home
+				.filter((player) => player.playerId === null)
+				.map((player) => player.position),
+
+			away: lineups.away
+				.filter((player) => player.playerId === null)
+				.map((player) => player.position),
+		};
+		setErrors(missingPlayers);
+
+		const hasMissing =
+			missingPlayers.home.length > 0 || missingPlayers.away.length > 0;
+		if (hasMissing) return;
+
+		// store
+		matchStore.setStartingLineups(lineups);
+
+		//move on
+		completeSetup();
+	};
 
 	return (
 		<div className="flex flex-1 flex-col">
@@ -35,7 +122,7 @@ export default function StartingLineupStep({
 				<div className="">
 					<fieldset className="">
 						<legend className="font-medium">
-							{home.name} -{' '}
+							{matchStore.setup.home.name} -{" "}
 							<span className="text-sm text-muted-foreground font-normal capitalize">
 								home
 							</span>
@@ -44,31 +131,84 @@ export default function StartingLineupStep({
 
 					<VolleyballCourt>
 						<div className="grid-cols-3 grid-rows-2 grid size-full">
-							{COURT_POSITIONS.map((position) => (
-								<button
-									className="size-full border hover:bg-white/10 border-dashed flex items-center justify-center"
-									key={position}
-									onClick={() => setTarget({ team: 'home', position })}
-								>
-									<p className=" text-white/60 text-4xl font-light">
-										{position}
-									</p>
-								</button>
-							))}
+							{COURT_POSITIONS.map((zone) => {
+								const slot = lineups.home.find((s) => s.position === zone);
+
+								if (!slot) return null;
+
+								const player = matchStore.setup.home.players.find(
+									(p) => p.id === slot.playerId,
+								);
+
+								return (
+									<Nameplate
+										key={zone}
+										zone={zone}
+										player={player}
+										onSelect={() => setTarget({ team: "home", position: zone })}
+										onRemove={() => removePlayer("home", zone)}
+										errors={errors.home}
+									/>
+								);
+							})}
 						</div>
 					</VolleyballCourt>
+					<LineupErrorBox positions={errors.home} />
 				</div>
 				<div className="">
 					<fieldset className="">
 						<legend className="font-medium">
-							{away.name} -{' '}
+							{matchStore.setup.away.name} -{" "}
 							<span className="text-sm text-muted-foreground font-normal capitalize">
 								away
 							</span>
 						</legend>
 					</fieldset>
+
+					<VolleyballCourt>
+						<div className="grid-cols-3 grid-rows-2 grid size-full">
+							{COURT_POSITIONS.map((zone) => {
+								const slot = lineups.away.find((s) => s.position === zone);
+
+								if (!slot) return null;
+
+								const player = matchStore.setup.away.players.find(
+									(p) => p.id === slot.playerId,
+								);
+
+								return (
+									<Nameplate
+										key={zone}
+										zone={zone}
+										player={player}
+										onSelect={() => setTarget({ team: "away", position: zone })}
+										onRemove={() => removePlayer("away", zone)}
+										errors={errors.away}
+									/>
+								);
+							})}
+						</div>
+					</VolleyballCourt>
+					<LineupErrorBox positions={errors.away} />
 				</div>
+
+				<Button
+					type="submit"
+					className="col-start-2 w-full py-5 self-end mt-auto md:mt-0"
+					onClick={() => continueOn()}
+				>
+					Continue
+				</Button>
 			</div>
+
+			<LineupSelectDialog
+				open={!!target}
+				onOpenChange={(open: boolean) => !open && setTarget(null)}
+				zone={target?.position}
+				players={availablePlayers()}
+				teamName={target ? matchStore.setup[target.team].name : ""}
+				assignPlayer={assignPlayer}
+			/>
 		</div>
 	);
 }

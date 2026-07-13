@@ -13,7 +13,11 @@ export default function PlayerDetailsStep({
 }: {
 	nextStep: () => void;
 }) {
-	const { away, home, removeEmptyPlayers } = useMatchStore();
+	const {
+		setup: { home, away },
+		removeEmptyPlayers,
+		updatePlayer,
+	} = useMatchStore();
 
 	const [errors, setErrors] = useState<Errors>({
 		home: {
@@ -35,6 +39,24 @@ export default function PlayerDetailsStep({
 		removeEmptyPlayers("away");
 		removeEmptyPlayers("home");
 		nextStep();
+	};
+
+	// TODO: remove — test helper to skip manual data entry
+	const fillTestData = () => {
+		const testNames: Record<"home" | "away", string[]> = {
+			home: ["Alex Reed", "Sam Doyle", "Chris Nolan", "Pat Vale", "Drew Bailey", "Jo Frost"],
+			away: ["Robin Hale", "Casey Poole", "Morgan Shaw", "Jamie Quinn", "Taylor Lane", "Riley Cross"],
+		};
+
+		(["home", "away"] as const).forEach((team) => {
+			const players = team === "home" ? home.players : away.players;
+			players.slice(0, 6).forEach((player, index) => {
+				updatePlayer(team, player.id, {
+					name: testNames[team][index],
+					number: index + 1,
+				});
+			});
+		});
 	};
 
 	const handleTeamRosterSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
@@ -111,6 +133,16 @@ export default function PlayerDetailsStep({
 						validation={errors.away}
 						duplicateNumberIds={awayDuplicateIds}
 					/>
+
+					{/* TODO: remove — test helper */}
+					<Button
+						type="button"
+						variant="outline"
+						className="md:col-start-1 md:row-start-3"
+						onClick={fillTestData}
+					>
+						Fill test data
+					</Button>
 
 					<Button type="submit" className="md:col-start-2">
 						Continue

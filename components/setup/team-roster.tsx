@@ -15,8 +15,8 @@ export default function TeamRoster({
 	numberInvalidIds: string[];
 	duplicateNumberIds: string[];
 }) {
-	const players = useMatchStore((state) => state[team].players);
-	const teamName = useMatchStore((state) => state[team].name);
+	const players = useMatchStore((state) => state.setup[team].players);
+	const teamName = useMatchStore((state) => state.setup[team].name);
 	const { addAdditionalPlayer } = useMatchStore();
 
 	const count = players.length;
