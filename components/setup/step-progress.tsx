@@ -1,7 +1,7 @@
-import { ChevronLeft } from "lucide-react";
-import { Button } from "../ui/button";
+import { ChevronLeft } from 'lucide-react';
+import { Button } from '../ui/button';
 
-import { TOTAL_STEPS } from "@/lib/constants";
+import { TOTAL_STEPS } from '@/lib/constants';
 
 export default function StepProgress({
 	step,

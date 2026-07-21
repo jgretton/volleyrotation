@@ -1,18 +1,25 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
-import { MAX_PLAYERS, MIN_PLAYERS } from "./constants";
-import { MatchStore, Team } from "./types";
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import { MAX_PLAYERS, MIN_PLAYERS } from './constants';
+import { MatchStore, Team } from './types';
 
 const makePlayer = () => ({
 	id: crypto.randomUUID(),
 	number: null,
-	name: "",
+	name: '',
 });
 
 const makeTeam = (): Team => ({
-	name: "",
+	name: '',
 	players: Array.from({ length: MIN_PLAYERS }, makePlayer),
-	lineup: [],
+	lineup: [
+		{ position: 1, playerId: null },
+		{ position: 2, playerId: null },
+		{ position: 3, playerId: null },
+		{ position: 4, playerId: null },
+		{ position: 5, playerId: null },
+		{ position: 6, playerId: null },
+	],
 });
 
 export const useMatchStore = create<MatchStore>()(
@@ -21,8 +28,20 @@ export const useMatchStore = create<MatchStore>()(
 			setup: {
 				home: makeTeam(),
 				away: makeTeam(),
+				currentStep: 1,
 			},
 			match: null,
+
+			setCurrentStep: (step: number) =>
+				set((state) => {
+					return {
+						...state,
+						setup: {
+							...state.setup,
+							currentStep: step,
+						},
+					};
+				}),
 
 			setTeamName: (team, teamName) =>
 				set((state) => ({
@@ -48,7 +67,7 @@ export const useMatchStore = create<MatchStore>()(
 							[team]: {
 								...state.setup[team],
 								players: state.setup[team].players.filter(
-									(player) => player.id !== playerID,
+									(player) => player.id !== playerID
 								),
 							},
 						},
@@ -75,7 +94,7 @@ export const useMatchStore = create<MatchStore>()(
 									...player,
 									...value,
 								}
-							: player,
+							: player
 					);
 
 					return {
@@ -89,7 +108,7 @@ export const useMatchStore = create<MatchStore>()(
 				set((state) => {
 					const players = state.setup[team].players;
 					const nonEmpty = players.filter(
-						(player) => player.name.trim() !== "" || player.number !== null,
+						(player) => player.name.trim() !== '' || player.number !== null
 					);
 
 					// safety: if we don't have 6 real players, leave the roster alone
@@ -113,10 +132,62 @@ export const useMatchStore = create<MatchStore>()(
 						},
 					};
 				}),
+			assignPlayerToStartingLineup: (team, position, playerId) =>
+				set((state) => {
+					const newTeamLineup = [...state.setup[team].lineup].map((p) => {
+						if (p.position === position)
+							return { position: position, playerId: playerId };
+						else return p;
+					});
+
+					return {
+						...state,
+						setup: {
+							...state.setup,
+							[team]: {
+								...state.setup[team],
+								lineup: newTeamLineup,
+							},
+						},
+					};
+				}),
+			removePlayerFromStartingLineup: (team, position) =>
+				set((state) => {
+					return {
+						...state,
+						setup: {
+							...state.setup,
+							[team]: {
+								...state.setup[team],
+								lineup: state.setup[team].lineup.map((slot) =>
+									slot.position === position
+										? { ...slot, playerId: null }
+										: slot
+								),
+							},
+						},
+					};
+				}),
+			startMatch: () =>
+				set((state) => {
+					return {
+						...state,
+						setup: {
+							home: makeTeam(),
+							away: makeTeam(),
+							currentStep: 1,
+						},
+						match: {
+							home: state.setup.home,
+							away: state.setup.away,
+							rotation: { home: 1, away: 1 },
+						},
+					};
+				}),
 		}),
 		{
-			name: "match-store",
+			name: 'match-store',
 			version: 5,
-		},
-	),
+		}
+	)
 );

@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import LineupSelectDialog from "@/components/lineup-select-dialog";
-import Nameplate from "@/components/nameplate";
-import LineupErrorBox from "@/components/setup/lineup-error-box";
-import { Button } from "@/components/ui/button";
-import VolleyballCourt from "@/components/volleyball-court";
-import { COURT_POSITIONS } from "@/lib/constants";
-import { useMatchStore } from "@/lib/matchStore";
-import { Player } from "@/lib/types";
-import { useState } from "react";
+import LineupSelectDialog from '@/components/lineup-select-dialog';
+import Nameplate from '@/components/nameplate';
+import LineupErrorBox from '@/components/setup/lineup-error-box';
+import { Button } from '@/components/ui/button';
+import VolleyballCourt from '@/components/volleyball-court';
+import { COURT_POSITIONS } from '@/lib/constants';
+import { useMatchStore } from '@/lib/matchStore';
+import { Player } from '@/lib/types';
+import { useState } from 'react';
 
 export default function StartingLineupStep({
 	completeSetup,
@@ -18,63 +18,40 @@ export default function StartingLineupStep({
 	const matchStore = useMatchStore();
 
 	const [target, setTarget] = useState<{
-		team: "home" | "away";
+		team: 'home' | 'away';
 		position: number;
 	} | null>(null);
-
-	type LineupSlot = { position: number; playerId: string | null };
-	const lineup: LineupSlot[] = [
-		{ position: 1, playerId: null },
-		{ position: 2, playerId: null },
-		{ position: 3, playerId: null },
-		{ position: 4, playerId: null },
-		{ position: 5, playerId: null },
-		{ position: 6, playerId: null },
-	];
-
-	const [lineups, setLineups] = useState<{
-		home: LineupSlot[];
-		away: LineupSlot[];
-	}>({ home: [...lineup], away: [...lineup] });
 
 	const availablePlayers = () => {
 		if (!target) return [];
 
-		const selectedIds = lineups[target.team]
+		const selectedIds = matchStore.setup[target.team].lineup
 			.filter((player) => player.playerId !== null)
 			.map((player) => player.playerId);
 
 		return matchStore.setup[target.team].players.filter(
-			(player) => !selectedIds.includes(player.id),
+			(player) => !selectedIds.includes(player.id)
 		);
 	};
 
 	const assignPlayer = (player: Player) => {
 		if (!target) return;
-
-		const newTeamLineup = [...lineups[target.team]].map((p) => {
-			if (p.position === target.position)
-				return { position: target.position, playerId: player.id };
-			else return p;
-		});
-
-		setLineups((prev) => ({ ...prev, [target.team]: newTeamLineup }));
+		matchStore.assignPlayerToStartingLineup(
+			target.team,
+			target.position,
+			player.id
+		);
 		setTarget(null);
 
 		const updatedErrors = errors[target.team].filter(
-			(zone) => zone !== target.position,
+			(zone) => zone !== target.position
 		);
 
 		setErrors((prev) => ({ ...prev, [target.team]: updatedErrors }));
 	};
 
-	const removePlayer = (team: "home" | "away", position: number) => {
-		setLineups((prev) => ({
-			...prev,
-			[team]: prev[team].map((slot) =>
-				slot.position === position ? { ...slot, playerId: null } : slot,
-			),
-		}));
+	const removePlayer = (team: 'home' | 'away', position: number) => {
+		matchStore.removePlayerFromStartingLineup(team, position);
 	};
 
 	const [errors, setErrors] = useState<{ home: number[]; away: number[] }>({
@@ -85,11 +62,11 @@ export default function StartingLineupStep({
 		// validate
 
 		const missingPlayers = {
-			home: lineups.home
+			home: matchStore.setup.home.lineup
 				.filter((player) => player.playerId === null)
 				.map((player) => player.position),
 
-			away: lineups.away
+			away: matchStore.setup.away.lineup
 				.filter((player) => player.playerId === null)
 				.map((player) => player.position),
 		};
@@ -99,8 +76,8 @@ export default function StartingLineupStep({
 			missingPlayers.home.length > 0 || missingPlayers.away.length > 0;
 		if (hasMissing) return;
 
-		// store
-		matchStore.setStartingLineups(lineups);
+		//save as match data and remove setup.
+		matchStore.startMatch();
 
 		//move on
 		completeSetup();
@@ -122,7 +99,7 @@ export default function StartingLineupStep({
 				<div className="">
 					<fieldset className="">
 						<legend className="font-medium">
-							{matchStore.setup.home.name} -{" "}
+							{matchStore.setup.home.name} -{' '}
 							<span className="text-sm text-muted-foreground font-normal capitalize">
 								home
 							</span>
@@ -132,12 +109,14 @@ export default function StartingLineupStep({
 					<VolleyballCourt>
 						<div className="grid-cols-3 grid-rows-2 grid size-full">
 							{COURT_POSITIONS.map((zone) => {
-								const slot = lineups.home.find((s) => s.position === zone);
+								const slot = matchStore.setup.home.lineup.find(
+									(s) => s.position === zone
+								);
 
 								if (!slot) return null;
 
 								const player = matchStore.setup.home.players.find(
-									(p) => p.id === slot.playerId,
+									(p) => p.id === slot.playerId
 								);
 
 								return (
@@ -145,8 +124,8 @@ export default function StartingLineupStep({
 										key={zone}
 										zone={zone}
 										player={player}
-										onSelect={() => setTarget({ team: "home", position: zone })}
-										onRemove={() => removePlayer("home", zone)}
+										onSelect={() => setTarget({ team: 'home', position: zone })}
+										onRemove={() => removePlayer('home', zone)}
 										errors={errors.home}
 									/>
 								);
@@ -158,7 +137,7 @@ export default function StartingLineupStep({
 				<div className="">
 					<fieldset className="">
 						<legend className="font-medium">
-							{matchStore.setup.away.name} -{" "}
+							{matchStore.setup.away.name} -{' '}
 							<span className="text-sm text-muted-foreground font-normal capitalize">
 								away
 							</span>
@@ -168,12 +147,14 @@ export default function StartingLineupStep({
 					<VolleyballCourt>
 						<div className="grid-cols-3 grid-rows-2 grid size-full">
 							{COURT_POSITIONS.map((zone) => {
-								const slot = lineups.away.find((s) => s.position === zone);
+								const slot = matchStore.setup.away.lineup.find(
+									(s) => s.position === zone
+								);
 
 								if (!slot) return null;
 
 								const player = matchStore.setup.away.players.find(
-									(p) => p.id === slot.playerId,
+									(p) => p.id === slot.playerId
 								);
 
 								return (
@@ -181,8 +162,8 @@ export default function StartingLineupStep({
 										key={zone}
 										zone={zone}
 										player={player}
-										onSelect={() => setTarget({ team: "away", position: zone })}
-										onRemove={() => removePlayer("away", zone)}
+										onSelect={() => setTarget({ team: 'away', position: zone })}
+										onRemove={() => removePlayer('away', zone)}
 										errors={errors.away}
 									/>
 								);
@@ -206,7 +187,7 @@ export default function StartingLineupStep({
 				onOpenChange={(open: boolean) => !open && setTarget(null)}
 				zone={target?.position}
 				players={availablePlayers()}
-				teamName={target ? matchStore.setup[target.team].name : ""}
+				teamName={target ? matchStore.setup[target.team].name : ''}
 				assignPlayer={assignPlayer}
 			/>
 		</div>

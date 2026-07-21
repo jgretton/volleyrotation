@@ -7,12 +7,15 @@ export type Player = {
 export type Team = {
 	name: string;
 	players: Player[];
-	lineup: { position: number; playerId: string }[];
+	lineup: LineupSlot[];
 };
+export type LineupSlot = { position: number; playerId: string | null };
+
 export type MatchState = {
 	setup: {
 		home: Team;
 		away: Team;
+		currentStep: number;
 	};
 	match: {
 		home: Team;
@@ -22,22 +25,35 @@ export type MatchState = {
 };
 
 export type MatchActions = {
-	setTeamName: (team: "home" | "away", teamName: string) => void;
+	setCurrentStep: (step: number) => void;
+	setTeamName: (team: 'home' | 'away', teamName: string) => void;
 	setTeamNames: (home: string, away: string) => void;
 
-	removeAdditionalPlayer: (team: "home" | "away", playerID: string) => void;
-	addAdditionalPlayer: (team: "home" | "away") => void;
-	removeEmptyPlayers: (team: "home" | "away") => void;
+	removeAdditionalPlayer: (team: 'home' | 'away', playerID: string) => void;
+	addAdditionalPlayer: (team: 'home' | 'away') => void;
+	removeEmptyPlayers: (team: 'home' | 'away') => void;
 	updatePlayer: (
-		team: "home" | "away",
+		team: 'home' | 'away',
 		playerID: string,
-		changes: Partial<Player>,
+		changes: Partial<Player>
 	) => void;
 
 	setStartingLineups: (startingLineups: {
-		home: Team["lineup"];
-		away: Team["lineup"];
+		home: Team['lineup'];
+		away: Team['lineup'];
 	}) => void;
+
+	assignPlayerToStartingLineup: (
+		team: 'home' | 'away',
+		position: number,
+		playerId: string
+	) => void;
+	removePlayerFromStartingLineup: (
+		team: 'home' | 'away',
+		position: number
+	) => void;
+
+	startMatch: () => void;
 };
 
 export type MatchStore = MatchState & MatchActions;

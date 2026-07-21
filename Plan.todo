@@ -1,0 +1,6 @@
+☐ migrate to match on confirm from setup.
+☐ load data directly from the matchStore for lineup select.
+
+☐ Sort players in to number order on lineup select
+☐ add max-h to lineup dialog with scroll
+☐ store selected players in state for starting lineup so on refresh it loads data.
