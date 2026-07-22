@@ -4,3 +4,5 @@
 ☐ Sort players in to number order on lineup select
 ☐ add max-h to lineup dialog with scroll
 ☐ store selected players in state for starting lineup so on refresh it loads data.
+
+☐ https://zustand.docs.pmnd.rs/learn/guides/beginner-typescript#multiple-selectors Look into useShallow

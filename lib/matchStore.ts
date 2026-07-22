@@ -1,16 +1,16 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { MAX_PLAYERS, MIN_PLAYERS } from './constants';
-import { MatchStore, Team } from './types';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import { MAX_PLAYERS, MIN_PLAYERS } from "./constants";
+import { MatchStore, Team } from "./types";
 
 const makePlayer = () => ({
 	id: crypto.randomUUID(),
 	number: null,
-	name: '',
+	name: "",
 });
 
 const makeTeam = (): Team => ({
-	name: '',
+	name: "",
 	players: Array.from({ length: MIN_PLAYERS }, makePlayer),
 	lineup: [
 		{ position: 1, playerId: null },
@@ -67,7 +67,7 @@ export const useMatchStore = create<MatchStore>()(
 							[team]: {
 								...state.setup[team],
 								players: state.setup[team].players.filter(
-									(player) => player.id !== playerID
+									(player) => player.id !== playerID,
 								),
 							},
 						},
@@ -94,7 +94,7 @@ export const useMatchStore = create<MatchStore>()(
 									...player,
 									...value,
 								}
-							: player
+							: player,
 					);
 
 					return {
@@ -108,7 +108,7 @@ export const useMatchStore = create<MatchStore>()(
 				set((state) => {
 					const players = state.setup[team].players;
 					const nonEmpty = players.filter(
-						(player) => player.name.trim() !== '' || player.number !== null
+						(player) => player.name.trim() !== "" || player.number !== null,
 					);
 
 					// safety: if we don't have 6 real players, leave the roster alone
@@ -162,7 +162,7 @@ export const useMatchStore = create<MatchStore>()(
 								lineup: state.setup[team].lineup.map((slot) =>
 									slot.position === position
 										? { ...slot, playerId: null }
-										: slot
+										: slot,
 								),
 							},
 						},
@@ -186,8 +186,8 @@ export const useMatchStore = create<MatchStore>()(
 				}),
 		}),
 		{
-			name: 'match-store',
+			name: "volleyrotation-store",
 			version: 5,
-		}
-	)
+		},
+	),
 );

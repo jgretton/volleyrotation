@@ -27,9 +27,11 @@ export default function LineupSelectDialog({
 }: LineupSelectDialogProps) {
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent>
+			<DialogContent className="flex flex-col max-h-120 w-full sm:max-w-xl">
 				<DialogHeader>
-					<DialogTitle>{teamName} — position {zone}</DialogTitle>
+					<DialogTitle>
+						{teamName} — position {zone}
+					</DialogTitle>
 					<DialogDescription>
 						Choose the player to start in this position.
 					</DialogDescription>
@@ -39,23 +41,29 @@ export default function LineupSelectDialog({
 						Every player is already in the lineup.
 					</p>
 				) : (
-					<ul className="grid gap-2">
-						{players.map((player) => (
-							<li key={player.id}>
-								<Button
-									type="button"
-									variant="outline"
-									onClick={() => assignPlayer(player)}
-									className="h-auto w-full justify-start gap-3 px-2 py-2"
-								>
-									<span className="flex size-9 shrink-0 items-center justify-center rounded-md border bg-muted text-sm font-semibold tabular-nums">
-										{player.number}
-									</span>
-									<span className="text-sm font-medium">{player.name}</span>
-								</Button>
-							</li>
-						))}
-					</ul>
+					<>
+						<ul className="grid py-6 flex-1 gap-2 w-full min-h-0 overflow-y-auto">
+							{players.map((player) => (
+								<li key={player.id}>
+									<Button
+										type="button"
+										variant="outline"
+										onClick={() => assignPlayer(player)}
+										className="h-auto w-full justify-start gap-3 px-2 py-2"
+									>
+										<span className="flex size-9 shrink-0 items-center justify-center rounded-md border bg-muted text-sm font-semibold tabular-nums">
+											{player.number}
+										</span>
+										<span className="text-sm font-medium">{player.name}</span>
+									</Button>
+								</li>
+							))}
+						</ul>
+						<p className="text-center text-muted-foreground">
+							{players.length} players available{" "}
+							{players.length > 5 && "· scroll to see all"}
+						</p>
+					</>
 				)}
 			</DialogContent>
 		</Dialog>
