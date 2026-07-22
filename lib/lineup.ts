@@ -1,14 +1,11 @@
-import { MatchStore } from "./types";
+import { Team } from "./types";
 
-export const getUnselectedPlayers = (
-	team: "home" | "away",
-	matchStore: MatchStore,
-) => {
-	const selectedIds = matchStore.setup[team].lineup
-		.filter((player) => player.playerId !== null)
-		.map((player) => player.playerId);
+export const getUnselectedPlayers = (team: Team) => {
+	const selectedIds = team.lineup
+		.filter((slot) => slot.playerId !== null)
+		.map((slot) => slot.playerId);
 
-	return matchStore.setup[team].players
+	return team.players
 		.filter((player) => !selectedIds.includes(player.id))
 		.sort((a, b) => (a.number ?? 0) - (b.number ?? 0));
 };

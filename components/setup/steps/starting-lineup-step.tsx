@@ -22,7 +22,7 @@ export default function StartingLineupStep({
 
 	const availablePlayers = () => {
 		if (!target) return [];
-		return getUnselectedPlayers(target.team, matchStore);
+		return getUnselectedPlayers(matchStore.setup[target.team]);
 	};
 
 	const assignPlayer = (player: Player) => {
