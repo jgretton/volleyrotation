@@ -1,8 +1,19 @@
-☐ migrate to match on confirm from setup.
-☐ load data directly from the matchStore for lineup select.
+✔ migrate to match on confirm from setup. @done(26-07-21 14:26)
+✔ load data directly from the matchStore for lineup select. @done(26-07-21 14:26)
 
-☐ Sort players in to number order on lineup select
-☐ add max-h to lineup dialog with scroll
-☐ store selected players in state for starting lineup so on refresh it loads data.
+✔ Sort players in to number order on lineup select @done(26-07-21 14:26)
+✔ add max-h to lineup dialog with scroll @done(26-07-21 14:26)
+✔ store selected players in state for starting lineup so on refresh it loads data. @done(26-07-21 14:26)
 
 ☐ https://zustand.docs.pmnd.rs/learn/guides/beginner-typescript#multiple-selectors Look into useShallow
+
+✔ Add rotate team button and functions @done(26-07-23 14:06)
+
+Subs:
+    ☐ plan how subs will work. Have to think about tracking a sub so warning message can be displayed when trying to resub.
+    ☐ New dialog for the subs where if replace the sub, there is only one option. Also show an error if tat player has already been subbed before to show they cannot be subbed again
+
+libs:
+    ☐ Add the option of including libs in the lineup
+    ☐ figure out how to handle libs in the match page
+        - maybe have a lib button to choose who ti come on for. I have function in the rotationMaker app that will take a lib off when the come front court and re add them again. 

@@ -178,9 +178,38 @@ export const useMatchStore = create<MatchStore>()(
 							currentStep: 1,
 						},
 						match: {
-							home: state.setup.home,
-							away: state.setup.away,
-							rotation: { home: 1, away: 1 },
+							home: { ...state.setup.home, rotation: 1, subs: {} },
+							away: { ...state.setup.away, rotation: 1, subs: {} },
+							sides: { left: "home" },
+						},
+					};
+				}),
+			rotateTeam: (team) =>
+				set((state) => {
+					if (!state.match) return state;
+					return {
+						...state,
+						match: {
+							...state.match,
+							[team]: {
+								...state.match[team],
+								rotation:
+									state.match[team].rotation === 6
+										? 1
+										: state.match[team].rotation + 1,
+							},
+						},
+					};
+				}),
+			swapSides: () =>
+				set((state) => {
+					if (!state.match) return state;
+					return {
+						match: {
+							...state.match,
+							sides: {
+								left: state.match.sides.left === "home" ? "away" : "home",
+							},
 						},
 					};
 				}),
